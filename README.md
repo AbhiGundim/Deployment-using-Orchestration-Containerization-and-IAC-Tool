@@ -33,13 +33,10 @@ To implement the DevOps lifecycle, the following detailed step-by-step guide wil
 - **Kubernetes Setup**: Follow the provided Kubernetes installation guide to set up the master and worker nodes using `kubeadm`.
   
 - **Deployment and Service Configuration**:
-  
-Create deployment.yaml and service.yaml files to define the Kubernetes resources needed to deploy the application.
+  Here are the deployment.yaml and service.yaml files defining Kubernetes resources for deploying an application named `myapp`.
 
-- `deployment.yaml`: Define the deployment to manage the lifecycle of your application.
-
-### deployment.yaml
-
+**deployment.yaml:**
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -59,16 +56,51 @@ spec:
         image: myapp:latest
         ports:
         - containerPort: 80
-        
-### service.yaml
-- `service.yaml`: Define the service to expose your application on a specific port.
+```
 
+**Explanation:**
+- `apiVersion: apps/v1`: Specifies the API version for Deployment resource.
+- `kind: Deployment`: Defines the type of resource as Deployment.
+- `metadata.name`: Specifies the name of the Deployment.
+- `spec.replicas`: Sets the desired number of replicas (instances) of the application to 2.
+- `spec.selector.matchLabels`: Defines the label selector to match Pods controlled by this Deployment.
+- `spec.template.metadata.labels`: Labels applied to Pods created by this template.
+- `spec.template.spec.containers`: Describes the containers to be run in the Pod.
+  - `name`: Name of the container.
+  - `image`: Docker image to use for the container.
+  - `ports`: Ports to expose from the container.
+
+**service.yaml:**
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
   name: myapp-service
 spec:
   type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
+  selector:
+    app: myapp
+```
+
+**Explanation:**
+- `apiVersion: v1`: Specifies the API version for Service resource.
+- `kind: Service`: Defines the type of resource as Service.
+- `metadata.name`: Specifies the name of the Service.
+- `spec.type`: Sets the type of Service to NodePort, exposing the Service on each node’s IP at a static port.
+- `spec.ports`: Specifies the ports that the Service should expose.
+  - `port`: Port on the Service (accessible internally within the cluster).
+  - `targetPort`: Port to access on the Pods selected by this Service.
+  - `nodePort`: If specified, this is the port where the Service is exposed externally (on each Node).
+- `spec.selector`: Selects the Pods to expose through the Service based on labels.
+  - `app: myapp`: Selects Pods with the label `app: myapp` to route traffic to.
+
+In this configuration:
+- The Deployment (`myapp-deployment`) will manage Pods running the `myapp` container (from Docker image `myapp:latest`), with 2 replicas, each exposing port 80.
+- The Service (`myapp-service`) will expose the Deployment internally within the cluster (`port: 80`) and externally (`nodePort: 30080` on each Node), directing traffic to Pods labeled `app: myapp`.
   
 - **Apply Configuration**:
   ```bash
