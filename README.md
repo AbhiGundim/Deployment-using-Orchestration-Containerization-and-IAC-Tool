@@ -29,10 +29,47 @@ To implement the DevOps lifecycle, the following detailed step-by-step guide wil
 - **Build and Push Docker Images**: Use GitHub Actions or Jenkins to automate the building and pushing of Docker images to Docker Hub upon code pushes to the master branch.
 
 ### 4. Kubernetes Cluster Deployment
+
 - **Kubernetes Setup**: Follow the provided Kubernetes installation guide to set up the master and worker nodes using `kubeadm`.
+  
 - **Deployment and Service Configuration**:
-  - `deployment.yaml`: Define the deployment to manage the lifecycle of your application.
-  - `service.yaml`: Define the service to expose your application on a specific port.
+  
+Create deployment.yaml and service.yaml files to define the Kubernetes resources needed to deploy the application.
+
+- `deployment.yaml`: Define the deployment to manage the lifecycle of your application.
+
+### deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp-container
+        image: myapp:latest
+        ports:
+        - containerPort: 80
+        
+### service.yaml
+- `service.yaml`: Define the service to expose your application on a specific port.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+spec:
+  type: NodePort
+  
 - **Apply Configuration**:
   ```bash
   kubectl apply -f deployment.yaml
