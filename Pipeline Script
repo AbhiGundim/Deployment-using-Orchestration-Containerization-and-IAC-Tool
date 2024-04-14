@@ -1,0 +1,32 @@
+pipeline {
+    agent none 
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('docker-hub-credentials')
+    }
+    stages {
+        stage('Checkout Code') {
+            agent { label 'jenkins-agent' }
+            steps {
+                git 'https://github.com/hshar/website.git'
+            }
+        }
+        stage('Build Docker Image') {
+            agent { label 'jenkins-agent' }
+            steps {
+                script {
+                    sh 'docker build -t username/myapp:${BUILD_ID} .'
+                    sh 'docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS'
+                    sh 'docker push username/myapp:${BUILD_ID}'
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            agent { label 'jenkins-agent' }
+            steps {
+                script {
+                    sh 'kubectl set image deployment/myapp myapp=username/myapp:${BUILD_ID}'
+                }
+            }
+        }
+    }
+}
